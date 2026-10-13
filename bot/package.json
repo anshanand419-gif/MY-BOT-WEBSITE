@@ -1,0 +1,7 @@
+{
+  "name": "minecraft-afk-bot",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "index.js",
+  "description": "Mineflayer AFK bot script"
+}

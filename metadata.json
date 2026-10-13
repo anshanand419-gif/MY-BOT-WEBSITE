@@ -1,0 +1,6 @@
+{
+  "name": "Minecraft AFK Bot Host & Deployer",
+  "description": "Premium Minecraft AFK Bot service with automatic server configuration, live console logs, and automated bot deployment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
