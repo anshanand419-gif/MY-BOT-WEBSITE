@@ -16,21 +16,30 @@ import { Plan, PaymentReceipt, BotConfig, BotStatusResponse } from './types.ts';
 import { Shield, Sparkles, Terminal, Server, CheckCircle2, Bot, Instagram, QrCode, MessageSquareText, ExternalLink } from 'lucide-react';
 
 const DEFAULT_PLAN: Plan = {
-  id: 'pro_afk',
-  name: '1 Month Plan',
+  id: 'pro_3m',
+  name: '3 Months Plan',
   tagline: 'Most Popular for Aternos & SMP Servers',
-  price: 2.49,
+  price: 2.39,
   priceInr: 199,
-  period: '1 month',
+  period: '3 months',
   popular: true,
   features: [
     'Universal Minecraft Auto-detect',
-    'Smart anti-AFK jumping & sneak routine',
-    'Hostile mob defense (16 mobs)',
+    '3 Months (90 Days) 24/7 Bot Uptime',
+    'Mob Auto-Defense (attacks hostile mobs)',
     'Water anti-drown safety routine',
-    '15-second automatic reconnect',
-    'Real-time child process terminal logs'
+    'Automatic 15s reconnect on kicks',
+    'Smart anti-AFK jumping & sneak routine',
+    'Full Console & Server config access'
   ]
+};
+
+const getPlanNameFromId = (planId?: string): string => {
+  if (planId === 'starter' || planId === '7days') return '7 Days Plan';
+  if (planId === 'pro_1m' || planId === '1month') return '1 Month Plan';
+  if (planId === 'pro_3m' || planId === 'pro_afk' || planId === '3months') return '3 Months Plan';
+  if (planId === 'vip_8m' || planId === 'vip' || planId === '8months') return '8 Months Plan';
+  return '3 Months Plan';
 };
 
 export default function App() {
@@ -49,6 +58,20 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const INSTAGRAM_ID = 'hell_king_ansh';
+
+  // Listen to URL hash or query params so owner can open portal on other phones via #owner or #admin
+  useEffect(() => {
+    const checkOwnerRoute = () => {
+      const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      if (hash === '#owner' || hash === '#admin' || search.includes('owner') || search.includes('admin')) {
+        setIsAdminModalOpen(true);
+      }
+    };
+    checkOwnerRoute();
+    window.addEventListener('hashchange', checkOwnerRoute);
+    return () => window.removeEventListener('hashchange', checkOwnerRoute);
+  }, []);
 
   // Show temporary toast message
   const showToast = (msg: string) => {
@@ -79,7 +102,7 @@ export default function App() {
           setPaymentReceipt({
             transactionId: data.payment.transactionId,
             planId: data.payment.planId,
-            planName: data.payment.planId === 'starter' ? '7 Days Plan' : data.payment.planId === 'vip' ? '1 Year Plan' : '1 Month Plan',
+            planName: getPlanNameFromId(data.payment.planId),
             amount: data.payment.amount,
             currency: data.payment.currency || 'INR',
             method: 'upi_scanner',
@@ -145,6 +168,7 @@ export default function App() {
           setIsCheckoutOpen(true);
         }}
         onOpenAiSupport={() => setIsAiSupportOpen(true)}
+        onOpenAdminModal={() => setIsAdminModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -187,8 +211,19 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Action Buttons for AI Support & Instagram Help */}
+      {/* Floating Action Buttons for AI Support, Owner Portal & Instagram Help */}
       <div className="fixed bottom-5 right-5 z-40 flex flex-col gap-2.5 items-end">
+        {/* Quick Owner Portal Button */}
+        <button
+          type="button"
+          onClick={() => setIsAdminModalOpen(true)}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-zinc-950/90 border border-red-500/60 text-red-300 hover:text-white hover:bg-red-950/80 font-bold text-xs shadow-xl shadow-red-950/50 hover:scale-105 active:scale-95 transition-all cursor-pointer backdrop-blur-md group"
+          title="Owner Admin Portal (Mukesh Kumar / Ansh) - Tap to approve UTRs"
+        >
+          <Shield className="w-4 h-4 text-red-400 group-hover:rotate-12 transition-transform" />
+          <span>👑 Owner Portal</span>
+        </button>
+
         {/* Instagram Support Button */}
         <a
           href="https://www.instagram.com/hell_king_ansh/"
@@ -246,7 +281,7 @@ export default function App() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsAdminModalOpen(true)}
-              className="text-zinc-500 hover:text-red-400 font-mono text-[11px] flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="text-red-400 hover:text-red-300 font-mono text-[12px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors bg-red-950/40 px-2.5 py-1 rounded-lg border border-red-500/30"
               title="Owner Admin Portal (Mukesh Kumar / Ansh)"
             >
               <Shield className="w-3.5 h-3.5 text-red-500" />
@@ -283,7 +318,7 @@ export default function App() {
                 setPaymentReceipt({
                   transactionId: data.payment.transactionId,
                   planId: data.payment.planId,
-                  planName: data.payment.planId === 'starter' ? '7 Days Plan' : data.payment.planId === 'vip' ? '1 Year Plan' : '1 Month Plan',
+                  planName: getPlanNameFromId(data.payment.planId),
                   amount: data.payment.amount,
                   currency: 'INR',
                   method: 'upi_scanner',

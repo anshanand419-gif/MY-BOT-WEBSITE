@@ -50,7 +50,11 @@ export const UpiScannerModal: React.FC<UpiScannerModalProps> = ({
   const UPI_ID = 'mukeshkumae078@okicici';
   const RECEIVER_NAME = 'Mukesh Kumar';
   const INSTAGRAM_ID = 'hell_king_ansh';
-  const AMOUNT_INR = selectedPlan.priceInr || (selectedPlan.id === 'starter' ? 99 : selectedPlan.id === 'vip' ? 899 : 199);
+  const AMOUNT_INR = selectedPlan.priceInr || (
+    selectedPlan.id === 'starter' ? 49 :
+    selectedPlan.id === 'pro_1m' ? 99 :
+    selectedPlan.id === 'vip_8m' || selectedPlan.id === 'vip' ? 499 : 199
+  );
 
   // Generate UPI QR code on mount or when plan changes
   useEffect(() => {

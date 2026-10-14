@@ -9,6 +9,7 @@ interface HeaderProps {
   paymentReceipt: PaymentReceipt | null;
   onOpenPaymentModal: () => void;
   onOpenAiSupport: () => void;
+  onOpenAdminModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,7 +18,8 @@ export const Header: React.FC<HeaderProps> = ({
   botStatus,
   paymentReceipt,
   onOpenPaymentModal,
-  onOpenAiSupport
+  onOpenAiSupport,
+  onOpenAdminModal
 }) => {
   return (
     <header className="sticky top-0 z-40 border-b border-emerald-950/40 bg-zinc-950/80 backdrop-blur-md">
@@ -99,6 +101,18 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Status & Action buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Owner Admin Portal Button */}
+            <button
+              type="button"
+              onClick={onOpenAdminModal}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-red-950/70 border border-red-500/50 text-red-300 hover:bg-red-900/80 hover:text-white text-xs font-bold transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95"
+              title="Owner Admin Portal (Mukesh Kumar / Ansh)"
+            >
+              <Shield className="w-3.5 h-3.5 text-red-400" />
+              <span className="hidden sm:inline">Owner</span>
+              <span className="sm:hidden font-mono text-[10px]">👑</span>
+            </button>
+
             {/* AI Support Button */}
             <button
               onClick={onOpenAiSupport}
@@ -163,10 +177,10 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile nav row */}
-      <div className="md:hidden border-t border-zinc-800/80 px-4 py-2 flex items-center justify-between gap-1 overflow-x-auto bg-zinc-950">
+      <div className="md:hidden border-t border-zinc-800/80 px-3 py-2 flex items-center justify-between gap-1 overflow-x-auto bg-zinc-950">
         <button
           onClick={() => setActiveTab('home')}
-          className={`px-3 py-1 rounded-md text-xs whitespace-nowrap ${
+          className={`px-2.5 py-1 rounded-md text-xs whitespace-nowrap shrink-0 ${
             activeTab === 'home' ? 'bg-emerald-500 text-zinc-950 font-semibold' : 'text-zinc-400'
           }`}
         >
@@ -174,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('config')}
-          className={`px-3 py-1 rounded-md text-xs whitespace-nowrap ${
+          className={`px-2.5 py-1 rounded-md text-xs whitespace-nowrap shrink-0 ${
             activeTab === 'config' ? 'bg-emerald-500 text-zinc-950 font-semibold' : 'text-zinc-400'
           }`}
         >
@@ -182,19 +196,29 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('console')}
-          className={`px-3 py-1 rounded-md text-xs whitespace-nowrap ${
+          className={`px-2.5 py-1 rounded-md text-xs whitespace-nowrap shrink-0 ${
             activeTab === 'console' ? 'bg-emerald-500 text-zinc-950 font-semibold' : 'text-zinc-400'
           }`}
         >
-          Bot Console
+          Console
         </button>
         <button
           onClick={() => setActiveTab('code')}
-          className={`px-3 py-1 rounded-md text-xs whitespace-nowrap ${
+          className={`px-2.5 py-1 rounded-md text-xs whitespace-nowrap shrink-0 ${
             activeTab === 'code' ? 'bg-emerald-500 text-zinc-950 font-semibold' : 'text-zinc-400'
           }`}
         >
           index.js
+        </button>
+        {/* Mobile Owner Portal Button */}
+        <button
+          type="button"
+          onClick={onOpenAdminModal}
+          className="px-2.5 py-1 rounded-md text-xs whitespace-nowrap bg-red-950/90 border border-red-500/60 text-red-300 font-bold flex items-center gap-1 shrink-0 hover:bg-red-900 active:scale-95"
+          title="Owner Admin Portal (Mukesh Kumar / Ansh)"
+        >
+          <Shield className="w-3 h-3 text-red-400" />
+          <span>👑 Owner</span>
         </button>
       </div>
     </header>

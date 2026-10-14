@@ -28,8 +28,8 @@ const PLANS: Plan[] = [
     id: 'starter',
     name: '7 Days Plan',
     tagline: '7 Days Non-Stop AFK & Chunk Loading',
-    price: 1.29,
-    priceInr: 99,
+    price: 0.59,
+    priceInr: 49,
     period: '7 days',
     features: [
       '7 Days (168 Hours) 24/7 Server Uptime',
@@ -41,34 +41,49 @@ const PLANS: Plan[] = [
     ]
   },
   {
-    id: 'pro_afk',
+    id: 'pro_1m',
     name: '1 Month Plan',
-    tagline: 'Most Popular for Aternos & SMP Servers',
-    price: 2.49,
-    priceInr: 199,
+    tagline: '30 Days 24/7 Guaranteed Uptime',
+    price: 1.19,
+    priceInr: 99,
     period: '1 month',
-    popular: true,
     features: [
       '30 Days 24/7 Non-Stop Server Uptime',
       'All 7 Days Plan features included',
-      'Mob Auto-Defense (attacks 16 hostile mobs)',
-      'Water anti-drown safety routine',
+      'Universal Minecraft Auto-detect',
+      'Mob Auto-Defense (attacks hostile mobs)',
       'Automatic 15s reconnect on kicks',
-      'Live SSE streaming terminal',
-      'One-click Child Process auto-restart',
-      '24/7 Farm & Chunk loader'
+      'Live console logs & status'
     ]
   },
   {
-    id: 'vip',
-    name: '1 Year Plan',
-    tagline: 'Maximum Savings & 365 Days Dedicated Fleet',
-    price: 10.99,
-    priceInr: 899,
-    period: '1 year',
+    id: 'pro_3m',
+    name: '3 Months Plan',
+    tagline: 'Most Popular for Aternos & SMP Servers',
+    price: 2.39,
+    priceInr: 199,
+    period: '3 months',
+    popular: true,
     features: [
-      '365 Days (Full Year) Uninterrupted AFK Bot',
+      '90 Days 24/7 Non-Stop Server Uptime',
       'All 1 Month Plan features included',
+      'Water anti-drown safety routine',
+      'Live SSE streaming terminal',
+      'One-click Child Process auto-restart',
+      '24/7 Farm & Chunk loader',
+      'Priority auto-reconnect engine'
+    ]
+  },
+  {
+    id: 'vip_8m',
+    name: '8 Months Plan',
+    tagline: 'VIP Dedicated Fleet & Maximum Value',
+    price: 5.99,
+    priceInr: 499,
+    period: '8 months',
+    features: [
+      '240 Days (8 Months) Dedicated Bot Hosting',
+      'All 3 Months Plan features included',
       'Custom Bot In-Game Username',
       'Dedicated node child process runtime',
       'Priority reconnect queue',
@@ -224,7 +239,7 @@ export const HomePricing: React.FC<HomePricingProps> = ({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
           {PLANS.map((plan) => {
             const isPopular = plan.popular;
             return (

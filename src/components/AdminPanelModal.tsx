@@ -16,7 +16,11 @@ import {
   Sparkles,
   Flame,
   CheckCircle,
-  Plus
+  Plus,
+  Eye,
+  EyeOff,
+  LogOut,
+  Share2
 } from 'lucide-react';
 import { DynamicKey } from '../types.ts';
 
@@ -41,8 +45,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   onClose,
   onAdminApprovedPayment
 }) => {
-  const [pin, setPin] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [pin, setPin] = useState(() => localStorage.getItem('HELL_KING_OWNER_PIN') || '');
+  const [showPin, setShowPin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('HELL_KING_OWNER_AUTH') === 'true');
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [dynamicKeys, setDynamicKeys] = useState<DynamicKey[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,6 +55,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const [selectedPrefix, setSelectedPrefix] = useState<'ANSH' | 'VIP' | 'MK'>('ANSH');
   const [error, setError] = useState('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copiedPortalUrl, setCopiedPortalUrl] = useState(false);
   const [justGeneratedCode, setJustGeneratedCode] = useState<string | null>(null);
 
   const fetchAdminData = async (adminPin: string) => {
@@ -73,8 +79,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
-      fetchAdminData(pin);
-      const interval = setInterval(() => fetchAdminData(pin), 3000);
+      const activePin = pin.trim() || localStorage.getItem('HELL_KING_OWNER_PIN') || '';
+      fetchAdminData(activePin);
+      const interval = setInterval(() => fetchAdminData(activePin), 3000);
       return () => clearInterval(interval);
     }
   }, [isOpen, isAuthenticated, pin]);
@@ -85,11 +92,17 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     e.preventDefault();
     setError('');
 
+    const cleanPin = pin.trim();
+    if (!cleanPin) {
+      setError('Please enter your Owner PIN');
+      return;
+    }
+
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: pin.trim() })
+        body: JSON.stringify({ pin: cleanPin })
       });
 
       const data = await res.json();
@@ -98,10 +111,27 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
       }
 
       setIsAuthenticated(true);
-      fetchAdminData(pin.trim());
+      localStorage.setItem('HELL_KING_OWNER_AUTH', 'true');
+      localStorage.setItem('HELL_KING_OWNER_PIN', cleanPin);
+      fetchAdminData(cleanPin);
     } catch (err: any) {
       setError(err.message || 'Incorrect Owner PIN. Access denied.');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('HELL_KING_OWNER_AUTH');
+    localStorage.removeItem('HELL_KING_OWNER_PIN');
+    setIsAuthenticated(false);
+    setPin('');
+    setError('');
+  };
+
+  const handleCopyPortalUrl = () => {
+    const url = window.location.origin + window.location.pathname + '#owner';
+    navigator.clipboard.writeText(url);
+    setCopiedPortalUrl(true);
+    setTimeout(() => setCopiedPortalUrl(false), 2500);
   };
 
   const handleGenerateKey = async () => {
@@ -196,7 +226,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
       <div className="relative w-full max-w-3xl bg-zinc-900 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden my-4 max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-red-950/70 via-zinc-900 to-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-6 bg-gradient-to-r from-red-950/70 via-zinc-900 to-zinc-900 border-b border-zinc-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold">
               <ShieldCheck className="w-6 h-6" />
@@ -206,20 +236,45 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 <span className="text-[10px] font-black uppercase tracking-wider text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/30">
                   OWNER VERIFICATION PORTAL
                 </span>
-                <span className="text-xs text-zinc-400">Mukesh Kumar / Ansh</span>
+                <span className="text-xs text-zinc-400 hidden sm:inline">Mukesh Kumar / Ansh</span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">
+              <h2 className="text-base sm:text-xl font-bold text-white">
                 Dynamic Key Generator &amp; Bank UTR Approval
               </h2>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Direct Mobile Link Copy Button */}
+            <button
+              type="button"
+              onClick={handleCopyPortalUrl}
+              className="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Copy direct link for other phone (#owner)"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">{copiedPortalUrl ? 'Copied Link!' : 'Share/Save Link'}</span>
+            </button>
+
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="px-2.5 py-1.5 rounded-lg bg-red-950/40 border border-red-500/30 hover:bg-red-900/60 text-red-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Log out from Owner Portal on this device"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Lock / Log Out</span>
+              </button>
+            )}
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -237,14 +292,25 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                 </p>
               </div>
 
-              <div>
+              <div className="relative max-w-xs mx-auto">
                 <input
-                  type="password"
+                  type={showPin ? 'text' : 'password'}
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="Enter Secret Owner PIN"
-                  className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-700 rounded-xl text-center text-sm font-mono text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="w-full pl-4 pr-10 py-2.5 bg-zinc-950 border border-zinc-700 rounded-xl text-center text-sm font-mono text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPin(!showPin)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
+                  title={showPin ? 'Hide PIN' : 'Show PIN'}
+                >
+                  {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
 
               {error && (
@@ -253,15 +319,20 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer"
+                className="w-full max-w-xs mx-auto py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer block"
               >
                 Login to Owner Portal
               </button>
 
-              <p className="text-[11px] text-zinc-500 flex items-center justify-center gap-1">
-                <Lock className="w-3 h-3 text-zinc-500" />
-                <span>Authorized Owner Access Only</span>
-              </p>
+              <div className="pt-2 flex flex-col items-center gap-1.5 text-[11px] text-zinc-400">
+                <span className="flex items-center gap-1 text-zinc-500">
+                  <Lock className="w-3 h-3 text-zinc-500" />
+                  <span>Authorized Owner Access Only</span>
+                </span>
+                <span className="text-[10px] text-zinc-500">
+                  Tip: Once logged in, your session stays active on this device.
+                </span>
+              </div>
             </form>
           ) : (
             /* Authenticated Portal Dashboard */
@@ -473,8 +544,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                               {sub.status}
                             </span>
                           </div>
-                          <div className="text-[11px] text-zinc-400 mt-1 flex items-center gap-3">
+                          <div className="text-[11px] text-zinc-400 mt-1 flex flex-wrap items-center gap-3">
                             <span>Payer: <strong>{sub.payerName}</strong></span>
+                            <span>Plan: <strong className="text-zinc-200">{sub.planId === 'starter' ? '7 Days' : sub.planId === 'pro_1m' ? '1 Month' : sub.planId === 'pro_3m' || sub.planId === 'pro_afk' ? '3 Months' : '8 Months'}</strong></span>
                             <span>Amount: <strong className="text-emerald-400">₹{sub.amount}</strong></span>
                             <span>{new Date(sub.timestamp).toLocaleTimeString()}</span>
                           </div>

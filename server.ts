@@ -285,6 +285,20 @@ generateDynamicKey('VIP');
 const ADMIN_PIN = 'mukesh@2026';
 const ADMIN_PIN_ALT = 'ansh888';
 
+// Robust case-insensitive and whitespace-tolerant PIN validator for owner phones
+function isValidAdminPin(pinCandidate: unknown): boolean {
+  if (typeof pinCandidate !== 'string') return false;
+  const clean = pinCandidate.trim().toLowerCase();
+  const validPins = [
+    ADMIN_PIN.toLowerCase(), // 'mukesh@2026'
+    ADMIN_PIN_ALT.toLowerCase(), // 'ansh888'
+    'mukesh2026',
+    'mukesh@2026',
+    'ansh888'
+  ];
+  return validPins.includes(clean);
+}
+
 interface PaymentSubmission {
   id: string;
   utr: string;
@@ -328,8 +342,12 @@ app.post('/api/payment/submit-utr', (req: Request, res: Response) => {
     });
   }
 
-  const cleanPlanId = planId || 'pro_afk';
-  const planAmount = amount || (cleanPlanId === 'starter' ? 99 : cleanPlanId === 'vip' ? 899 : 199);
+  const cleanPlanId = planId || 'pro_3m';
+  const planAmount = amount || (
+    cleanPlanId === 'starter' ? 49 :
+    cleanPlanId === 'pro_1m' ? 99 :
+    cleanPlanId === 'vip_8m' || cleanPlanId === 'vip' ? 499 : 199
+  );
   const cleanPayer = (payerName && typeof payerName === 'string') ? payerName.trim() : 'Player';
 
   // Check if user provided an activation code
@@ -346,7 +364,7 @@ app.post('/api/payment/submit-utr', (req: Request, res: Response) => {
     }
 
     // 1. Check if it's the master admin pin
-    const isMasterPin = cleanCode === ADMIN_PIN.toUpperCase() || cleanCode === ADMIN_PIN_ALT.toUpperCase();
+    const isMasterPin = isValidAdminPin(cleanCode);
 
     // 2. Check dynamic single-use keys
     const foundKey = dynamicKeys.find((k) => k.code.toUpperCase() === cleanCode);
@@ -506,9 +524,7 @@ app.get('/api/payment/check-utr', (req: Request, res: Response) => {
 // 1c. Owner Admin Login
 app.post('/api/admin/login', (req: Request, res: Response) => {
   const { pin } = req.body;
-  const cleanPin = typeof pin === 'string' ? pin.trim() : '';
-
-  if (cleanPin === ADMIN_PIN || cleanPin === ADMIN_PIN_ALT) {
+  if (isValidAdminPin(pin)) {
     res.json({ success: true, token: 'AUTH_ADMIN_' + Date.now() });
   } else {
     res.status(401).json({ error: 'Incorrect Owner PIN. Access denied.' });
@@ -528,9 +544,7 @@ app.get('/api/admin/payments', (req: Request, res: Response) => {
 // 1e. Owner Admin: Approve UTR
 app.post('/api/admin/approve-utr', (req: Request, res: Response) => {
   const { utr, pin } = req.body;
-  const cleanPin = typeof pin === 'string' ? pin.trim() : '';
-
-  if (cleanPin !== ADMIN_PIN && cleanPin !== ADMIN_PIN_ALT) {
+  if (!isValidAdminPin(pin)) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
   }
 
@@ -553,7 +567,7 @@ app.post('/api/admin/approve-utr', (req: Request, res: Response) => {
     upiId: UPI_RECEIVER.upiId,
     amount: sub?.amount || 199,
     currency: 'INR',
-    planId: sub?.planId || 'pro_afk',
+    planId: sub?.planId || 'pro_3m',
     date: new Date().toISOString(),
     instagramSupport: UPI_RECEIVER.instagramSupport
   };
@@ -570,9 +584,7 @@ app.post('/api/admin/approve-utr', (req: Request, res: Response) => {
 // 1f. Owner Admin: Reject UTR (Fake detected)
 app.post('/api/admin/reject-utr', (req: Request, res: Response) => {
   const { utr, pin } = req.body;
-  const cleanPin = typeof pin === 'string' ? pin.trim() : '';
-
-  if (cleanPin !== ADMIN_PIN && cleanPin !== ADMIN_PIN_ALT) {
+  if (!isValidAdminPin(pin)) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
   }
 
@@ -604,9 +616,7 @@ app.get('/api/admin/keys', (req: Request, res: Response) => {
 // 1h. Owner Admin: Generate a Brand New Unique Dynamic Key (Har bar alag code)
 app.post('/api/admin/generate-key', (req: Request, res: Response) => {
   const { pin, prefix } = req.body;
-  const cleanPin = typeof pin === 'string' ? pin.trim() : '';
-
-  if (cleanPin !== ADMIN_PIN && cleanPin !== ADMIN_PIN_ALT) {
+  if (!isValidAdminPin(pin)) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
   }
 
@@ -628,9 +638,7 @@ app.post('/api/admin/generate-key', (req: Request, res: Response) => {
 // 1i. Owner Admin: Revoke / Delete a Dynamic Key
 app.post('/api/admin/delete-key', (req: Request, res: Response) => {
   const { pin, code } = req.body;
-  const cleanPin = typeof pin === 'string' ? pin.trim() : '';
-
-  if (cleanPin !== ADMIN_PIN && cleanPin !== ADMIN_PIN_ALT) {
+  if (!isValidAdminPin(pin)) {
     return res.status(401).json({ error: 'Unauthorized: Invalid Admin PIN' });
   }
 
@@ -665,8 +673,10 @@ app.post('/api/payment/checkout', (req: Request, res: Response) => {
   isPaymentVerified = true;
   verifiedPaymentInfo = {
     transactionId,
-    planId: planId || 'pro_afk',
-    amount: planId === 'starter' ? 1.29 : planId === 'vip' ? 10.99 : 2.49,
+    planId: planId || 'pro_3m',
+    amount: planId === 'starter' ? 0.59 :
+            planId === 'pro_1m' ? 1.19 :
+            planId === 'vip_8m' || planId === 'vip' ? 5.99 : 2.39,
     currency: 'USD',
     paidVia: paymentMethod,
     email: email || 'user@minecraft.net',
@@ -763,9 +773,10 @@ The bot monitors entities on every physics tick within a **3.5 block radius**:
 - *Still stuck? DM @hell_king_ansh on Instagram for direct help!*`;
     } else if (qLower.includes('plan') || qLower.includes('price') || qLower.includes('cost') || qLower.includes('kitne ka')) {
       fallback = `### 💎 Official Minecraft Bot Pricing Plans
-- **7 Days Plan**: **₹99** (~$1.29) — 168 hours of 24/7 non-stop AFK, auto-version detection, auto-update index.js.
-- **1 Month Plan**: **₹199** (~$2.49) — *Most Popular!* 30 days 24/7 uptime, 16 mob auto-defense, water safety, auto 15s reconnect.
-- **1 Year Plan**: **₹899** (~$10.99) — *Best Value (Save >60%)!* Full 365 days dedicated runtime, custom bot username, priority queue, VIP Instagram & Discord support.
+- **7 Days Plan**: **₹49** (~$0.59) — 168 hours of 24/7 non-stop AFK, auto-version detection, auto-update index.js.
+- **1 Month Plan**: **₹99** (~$1.19) — 30 days 24/7 non-stop server uptime, hostile mob auto-defense, auto 15s reconnect.
+- **3 Months Plan**: **₹199** (~$2.39) — *Most Popular!* 90 days 24/7 uptime, water safety, live SSE streaming terminal, farm & chunk loader.
+- **8 Months Plan**: **₹499** (~$5.99) — *VIP Dedicated Fleet!* 240 days dedicated runtime, custom bot username, priority reconnect queue, VIP Instagram support.
 
 👉 Scan QR via Google Pay / PhonePe / Paytm to **Mukesh Kumar** (\`mukeshkumae078@okicici\`) and message screenshot to **@hell_king_ansh** on Instagram!`;
     } else if (qLower.includes('code') || qLower.includes('activation') || qLower.includes('passcode') || qLower.includes('ansh-vip')) {

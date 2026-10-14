@@ -23,7 +23,7 @@ interface AiSupportDrawerProps {
 }
 
 const PRESET_QUESTIONS = [
-  'What are the bot plan prices (7 Days, 1 Month, 1 Year)?',
+  'What are the bot plan prices (7 Days ₹49, 1 Month ₹99, 3 Months ₹199, 8 Months ₹499)?',
   'How does the Anti-AFK system work?',
   'Which hostile mobs does the bot attack?',
   'How do I connect the bot to my Aternos server?',
